@@ -1,12 +1,17 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const secret = require("./secret");
+
 
 const app = express();
 
 app.use(express.urlencoded({extended:false}));
+app.use(cookieParser());
 
 app.get("/",function(req,res){
-    res.send("index route...");
+    res.send(req.cookies);
 });
 
 app.get("/login",function(req,res){
@@ -30,7 +35,12 @@ app.post("/login",function(req,res){
         bcrypt.compare(req.body.password,user[0].password,function(err,success){
 
             if(success){
-                res.send("Login Success!!!!!!!");
+                
+               // res.cookie("auth",true,{httpOnly:true,sameSite:"strict"});
+               
+               const token = jwt.sign({email:user[0].email},secret,{expiresIn:60});
+               res.cookie("token",token,{httpOnly:true,sameSite:"strict"}); 
+               res.send("Login Success!!!!!!!");
             }
             else{
                 res.send("Wrong Password");
@@ -38,9 +48,6 @@ app.post("/login",function(req,res){
 
 
         })
-
-
-
    }
    else
    {
