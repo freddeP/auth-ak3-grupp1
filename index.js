@@ -14,6 +14,48 @@ app.get("/",function(req,res){
     res.send(req.cookies);
 });
 
+app.get("/secret",auth,test,function(req,res){
+    res.send(req.cookies);
+});
+
+app.get("/logout", function(req,res){
+
+    res.cookie("token","snart är det jul");
+    res.redirect("/secret");
+
+});
+
+
+function test(req,res,next){
+
+    console.log("from test-middleware");
+    next();
+}
+
+function auth(req,res,next){
+
+    // börja med att kolla cookie om den ens existerar...
+    if(req.cookies.token)
+    {
+            jwt.verify(req.cookies.token,secret,function(err,token){
+                if(!err)
+                {
+                    next();
+                }
+                else
+                {
+                    res.send(err.message);
+                }
+            });
+    }
+    else{
+        res.send("no token provided");
+    }
+}
+
+
+
+
 app.get("/login",function(req,res){
     res.sendFile(__dirname+"/loginform.html");
 });
